@@ -29,17 +29,18 @@ def getDeals(soup):
     link = item.find('a', {'class': 'a-link-normal s-link-style a-text-normal'})['href']
     
     # getting prices, not all product will have sale price and old price
+    # .replace(',', '') for 1,100 -> float (doesn't work)
     
     try:
-      salePrice = float(item.find_all('span', {'class': 'a-offscreen'})[0].text.replace('£', '').strip())
-      oldPrice = float(item.find_all('span', {'class': 'a-offscreen'})[1].text.replace('£', '').strip())
+      salePrice = float(item.find_all('span', {'class': 'a-offscreen'})[0].text.replace('£', '').strip().replace(',', ''))
+      oldPrice = float(item.find_all('span', {'class': 'a-offscreen'})[1].text.replace('£', '').strip().replace(',', ''))
       
     except:
       
       # hell, some products don't have any price
       
       try:
-        oldPrice = float(item.find('span', {'class': 'a-offscreen'}).text.replace('£', '').strip())
+        oldPrice = float(item.find('span', {'class': 'a-offscreen'}).text.replace('£', '').strip().replace(',', ''))
       except:
         salePrice = 0
         oldPrice = 0
@@ -47,7 +48,7 @@ def getDeals(soup):
     # getting reviews
     
     try:
-      reviews = float(item.find('span', {'class':'a-size-base'}).text.strip())
+      reviews = float(item.find('span', {'class':'a-size-base'}).text.strip().replace(',', ''))
       
     except:
       reviews = 0
@@ -93,7 +94,7 @@ while True:
 df = pd.DataFrame(dealsList)
 
 # adding another column for discount
-df['Discount (%)'] = (100 - (df.Sale_Price / df.Original_Price) * 100.0)
+df['Discount (%)'] = round((100 - (df.Sale_Price / df.Original_Price) * 100.0), 2)
 
 # sorting with highest discount
 # df = df.sort_values(by=['Discount (%)'], ascending=False)
